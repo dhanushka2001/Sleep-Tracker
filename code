@@ -1,0 +1,285 @@
+#aims:
+#1) see how much time is spent sleeping
+#2) allow the user to track how much time is used productively (time spent revising, exercising etc)
+#3) recommend a time to sleep, to wake up early based on data
+#4)
+#import Event
+#import calendar
+#c = calendar.TextCalendar(calendar.SUNDAY)
+#for i in range(1,12):
+#  str = c.formatmonth(2021,i)
+#  print(str)
+
+#we should make a read me at the end to explain how it all works, at the end tho still more to do
+
+import datetime
+import matplotlib.pyplot as plt
+
+def delete():
+    '''deletes last line of sleep.txt'''
+    f = open("sleep.txt", "r")
+    lines = f.readlines()
+    f.close()
+    lines = lines[:-1]
+    f = open("sleep.txt", "w")
+    for line in lines:
+        f.write(line)
+    f.close()
+
+#dataset function outputs all the data in order [SWSWSWSW...]
+def opensleeptxt():
+  f = open("sleep.txt")
+  temp1 = []
+  for x in f:
+    y = str.split(x)
+    temp1.append(y)
+  return(temp1)
+  f.close() 
+
+def dataset():
+  temp1 = opensleeptxt()
+  dataset = []
+  for n in range(len(temp1) - 1):
+   if n == 0 and temp1[0][0] == "Wake":
+    continue
+   elif n == (len(temp1) - 2) and temp1[len(temp1) - 2][0] == "Sleep":
+    continue
+   else:
+    dataset.append(temp1[n])
+  return(dataset)
+
+def lead_zero(string):
+  new = string.lstrip('0')
+  if new == '':
+    return(00)
+  else:
+    return(int(new))
+
+
+def time_difference(S,W):
+  # datetime(year, month, day, hour, minute, second)
+  wakeuptime = datetime.datetime(int(W[3]),lead_zero(W[2]),lead_zero(W[1]),lead_zero(W[4]),lead_zero(W[5]))
+  sleeptime = datetime.datetime(int(S[3]),lead_zero(S[2]),lead_zero(S[1]),lead_zero(S[4]),lead_zero(S[5]))
+  #wakeuptime = datetime.datetime(int(W[3]),int(W[2].lstrip('0')),int(W[1].lstrip('0')),int(W[4].lstrip('0')),int(W[5].lstrip('0')))
+  #sleeptime = datetime.datetime(int(float((S[3]))),int(float(S[2].lstrip('0'))),int(float(S[1].lstrip('0'))),int(float(S[4].lstrip('0'))),int(float(S[5].lstrip('0'))))
+  #sleeptime = datetime.datetime(int(S[3])),int(S[2].lstrip('0')),int(S[1].lstrip('0')),int(S[4].lstrip('0')),int(S[5].lstrip('0')))
+
+  # returns a timedelta object 
+  #c = wakeuptime - sleeptime 
+  c = wakeuptime - sleeptime
+  #print('Difference: ', c) 
+
+  minutes = c.total_seconds() / 60
+  return(minutes) 
+ 
+  # returns the difference of the time of the day 
+  #minutes = c.seconds / 60
+  #print('Difference in minutes: ', minutes) 
+
+def time_slept():
+  time_slept = []
+  x = dataset()
+  for i in range(int(len(x)/2)): 
+    j = 2*i+1
+    #j = 1,3,5,...
+    y = time_difference(x[j-1],x[j])
+    time_slept.append(y)
+  return(time_slept)
+
+#temp1 = opensleeptxt()
+#time_difference(temp1[1],temp1[2])
+
+def isinteger(k):
+  if input_str.strip().isdigit():
+    return(k)
+  else:
+    print("Not a valid input, try entering the digit version")
+
+def plot_time():
+  y_vals = time_slept()
+  print(y_vals)
+  plt.plot(y_vals)
+plot_time()
+
+
+
+#times = []
+
+
+def menu():
+    main = input("Welcome to the sleep tracker, enter 1 to start: \n")
+    if main == "1":
+        global stat
+        #stat tells us if the date they entered is when they woke up or went to bed, the text file should be like [SWSWSWSWS...] if there is a repeated letter it means they forgot to input, so ignore that day when figuring out time slept
+
+        # Will we use numpy for the graphing?
+        tracker = input(
+            "| 1 = Sleep | 2 = Wake up | 3 = View all entries | 4 = Delete last entry | 5 = Return to menu | \n"
+        )
+        # do we need an option for estimating the time
+        if tracker == "1":
+
+          f = open("sleep.txt", "r")
+          lines = f.readlines()
+          f.close()
+          lastline = lines[-1]
+          if lastline.split()[0] == 'Sleep':
+            f = open("sleep.txt")
+            temp1 = []
+            for x in f:
+              y = str.split(x)
+              temp1.append(y)
+              temp1.reverse()
+              for i in range(3):
+                print(temp1[-(i + 1)][0] + " " + temp1[-(i + 1)][1] + "/" +
+                          temp1[-(i + 1)][2] + " " + temp1[-(i+1)][4]+":"+temp1[-(i+1)][5])
+              f.close()
+              ans = input("The last entry was also slept, it seems you forgot to enter when you last woke up. The system will only accept a Wake up entry next. \n | 1 = Return to menu | \n")
+                
+              if ans == "1":
+                menu()
+                     
+              else:
+                print(ans + " is not a valid option")
+                menu()
+
+          stat = "Sleep"
+          f = open("sleep.txt", "a")
+          x = datetime.datetime.now()
+          # times += [x]
+          # may not be able to store them like this
+          day = x.strftime("%d")
+          month = x.strftime("%m")
+          year = x.strftime("%y")
+          hour = x.strftime("%H")
+          minute = x.strftime("%M")
+          #delta = datetime.timedelta(times[-1] - times[-2])
+          #seconds = delta.totalseconds()
+          #delta_hours = seconds/3600
+          # may not be how timedelta is used, checking
+          f.write(stat + " " + day + " " + month + " " + year + " " + hour + " " + minute + "\n")
+          #print(delta)
+          f.close()
+
+        elif tracker == "2":
+          f = open("sleep.txt", "r")
+          lines = f.readlines()
+          f.close()
+          lastline = lines[-1]
+          print(lastline.split())
+          if lastline.split()[0] == 'Wake':
+            f = open("sleep.txt")
+            temp1 = []
+            for x in f:
+                y = str.split(x)
+                temp1.append(y)
+                temp1.reverse()
+            for i in range(3):
+              print(temp1[-(i + 1)][0] + " " + temp1[-(i + 1)][1] + "/" +temp1[-(i + 1)][2] + " " + temp1[-(i+1)][4]+":"+temp1[-(i+1)][5])
+              f.close()
+            ans = input("The last entry was also wake up, it seems you forgot to enter when you last slept. The system will only accept a sleep entry next. \n | 1 = Return to start | \n"
+                )
+                
+            if ans == "1":
+              menu()
+                     
+            else:
+              print(ans + " is not a valid option")
+              menu()
+            
+            
+            stat = "Wake"
+            f = open("sleep.txt", "a")
+            x = datetime.datetime.now()
+            day = x.strftime("%d")
+            month = x.strftime("%m")
+            year = x.strftime("%y")
+            hour = x.strftime("%H")
+            minute = x.strftime("%M")
+            f.write("\n" + stat + " " + day + " " + month + " " + year + " " +
+                    hour + " " + minute + "\n")
+            f.close()
+
+        elif tracker == "3":
+          x = opensleeptxt()
+          for i in range(len(x)-1):
+            print(x[i][0] +" "+ x[i][1] +"/"+ x[i][2] +"/"+ x[i][3] +" "+ x[i][4]+ ":"+ x[i][5])
+          menu()
+
+        elif tracker == "4":
+            ans = input(
+                "Are you sure you sure you want to delete the last entry? \n| 1 = Yes | 2 = No | \n"
+            )
+            if ans == "1":
+                delete()
+            elif ans == "2":
+                menu()
+            else:
+                print(ans + " is not a valid option")
+                menu()
+        
+        elif tracker == "5":
+          menu()
+        
+        else:
+          print(tracker + " is not a valid option")
+          menu()
+
+
+#if they do a duplicate (e.g. sleep sleep) there should be 2 reasons, 1. accidentally, 2. they missed a day, for 2, need to ask for estimate or calculate average
+
+# if main == "2":
+
+  #else:
+    #print(tracker + "is not a valid option")
+#   menu()
+
+menu()
+
+#need to be able to get a nested list so we can use all the data
+
+#nested list, easier to take out the data
+# what will we do with the data? calculate what time they were asleep for?
+#yeah we can do that, we can also see average time went to bed, and how much time during the day if they give us their productivity
+
+#f = open("sleep.txt")
+#temp1 = []
+#for x in f:
+#    y = str.split(x)
+#    temp1.append(y)
+#f.close()
+#print(temp1)
+#print("\n")
+#print("hours:")
+#for i in temp1:
+#  print(i)
+#  print(i[3])
+
+# yes, we need to do something different if the times are on different days
+#so would we go time  = (temp1[n+1][3] - temp1[n][3]) + (temp1[n+1][4] - temp1[n+1][4])/60 hours
+# we would need to make sure that temp1[n+1] is a wake though...
+# oh, this is wrong
+
+#as the also have to be careful they might sleep at 01, we can check if its a new day and add 24
+# creating list of times that the user was asleep, we need to make sure it is sleep,wake,sleep,wake first
+#times_slept = []
+#month_30 = [4,6,9,11]
+#month_31 = [1,3,5,7,8,10,12]
+#month_leap = [2]
+#for n in range(len(temp1) - 2):
+#    if temp1[n][0] == "Sleep":
+#        time_slept = (float(temp1[n + 1][4]) - float(temp1[n][4]) +
+#                      (float(temp1[n + 1][5]) - float((temp1[n + 1][5])) / 60))
+#        time_slept += 24*(float(temp1[n + 1][1]) - float(temp1[n][1]))
+#        for i in range(int(temp1[n][3])+1,int(temp1[n+1][3])+1):
+#          if i in month_30:
+#            hours
+#        times_slept.append(round(time_slept,2))
+#print(times_slept)
+#print(times_slept)
+# can we just re-use all of this code but for noting which times they were e.g. revising, in lectures, not working, etc. We could be done rather quickly
+#yeah we should do that, the console says an error at 139 looks like it works now
+
+
+
+
